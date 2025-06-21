@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConversation } from '@11labs/react';
 import { Mic, MicOff, Phone, PhoneOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,18 +12,10 @@ const ConversationButton = () => {
   const conversation = useConversation({
     onConnect: () => {
       console.log('Conectado a Malbe');
-      toast({
-        title: "¡Conectado!",
-        description: "Ya puedes hablar con Malbe",
-      });
       setIsConnecting(false);
     },
     onDisconnect: () => {
       console.log('Desconectado de Malbe');
-      toast({
-        title: "Desconectado",
-        description: "La conversación con Malbe ha terminado",
-      });
       setIsConnecting(false);
     },
     onError: (error) => {
@@ -39,6 +31,21 @@ const ConversationButton = () => {
       console.log('Mensaje recibido:', message);
     }
   });
+
+  // Hide toasts when conversation is active
+  useEffect(() => {
+    const toastContainer = document.querySelector('[data-sonner-toaster]') || 
+                          document.querySelector('.toast-viewport') ||
+                          document.querySelector('[data-radix-toast-viewport]');
+    
+    if (toastContainer) {
+      if (conversation.status === 'connected') {
+        (toastContainer as HTMLElement).style.display = 'none';
+      } else {
+        (toastContainer as HTMLElement).style.display = '';
+      }
+    }
+  }, [conversation.status]);
 
   const requestMicrophonePermission = async () => {
     try {
