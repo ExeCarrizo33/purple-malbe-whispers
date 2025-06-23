@@ -50,44 +50,44 @@ const bots = [
 
 const BotsSection = () => {
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-purple-50/30 relative overflow-hidden">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+    <section className="py-12 md:py-20 bg-gradient-to-b from-white to-purple-50/30 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6">
             <span className="gradient-text">Bots Especializados</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 px-4 leading-relaxed">
             Descubre nuestros bots diseñados específicamente para diferentes industrias y necesidades de negocio.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto">
           {bots.map((bot, index) => (
             <Card 
               key={index}
               className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-purple-100/50 bg-white/80 backdrop-blur-sm"
             >
-              <CardHeader className="text-center">
-                <div className={`w-16 h-16 bg-gradient-to-br ${bot.color} rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <bot.icon className="w-8 h-8 text-white" />
+              <CardHeader className="text-center p-4 sm:p-6">
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br ${bot.color} rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <bot.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <CardTitle className="text-xl font-semibold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+                <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
                   {bot.name}
                 </CardTitle>
               </CardHeader>
               
-              <CardContent className="text-center">
-                <p className="text-gray-600 mb-6 leading-relaxed">
+              <CardContent className="text-center p-4 sm:p-6 pt-0">
+                <p className="text-gray-600 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
                   {bot.description}
                 </p>
                 
                 <div className="space-y-2">
-                  <h4 className="font-medium text-purple-700 mb-3">Características principales:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <h4 className="font-medium text-purple-700 mb-3 text-sm sm:text-base">Características principales:</h4>
+                  <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
                     {bot.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></div>
-                        {feature}
+                        <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2 flex-shrink-0"></div>
+                        <span className="text-center">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -97,12 +97,12 @@ const BotsSection = () => {
           ))}
         </div>
 
-        <div className="text-center mt-16">
-          <div className="glass px-6 py-4 rounded-2xl inline-block">
-            <p className="text-purple-700 font-medium mb-2">
+        <div className="text-center mt-12 md:mt-16 px-4">
+          <div className="glass px-4 py-3 sm:px-6 sm:py-4 rounded-2xl inline-block">
+            <p className="text-purple-700 font-medium mb-2 text-sm sm:text-base">
               ¿Necesitas un bot personalizado?
             </p>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
               Podemos crear un bot específico para tu industria y necesidades únicas
             </p>
           </div>
