@@ -31,12 +31,12 @@ const ConversationButton = () => {
       console.log('Mensaje recibido:', message);
 
       try {
-        const parsed = JSON.parse(message.text);
+        const parsed = JSON.parse(message.message);
         if (parsed?.redirect) {
           window.location.href = parsed.redirect;
         }
       } catch {
-        console.log("Respuesta normal:", message.text);
+        console.log("Respuesta normal:", message.message);
       }
     }
   });
