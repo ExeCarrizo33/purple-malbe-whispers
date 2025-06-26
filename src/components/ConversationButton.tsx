@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useConversation } from '@11labs/react';
 import { Mic, MicOff, Phone, PhoneOff } from 'lucide-react';
@@ -73,7 +74,7 @@ const ConversationButton = () => {
     try {
       setIsConnecting(true);
       await conversation.startSession({
-        agentId: 'agent_01jy9zgr8yejga3h1gk8s5hz4m'
+        agentId: 'agent_01jymdjr4xfdz8q97d5ykrjxz4'
       });
     } catch (error) {
       console.error('Error al iniciar conversación:', error);
