@@ -29,6 +29,15 @@ const ConversationButton = () => {
     },
     onMessage: (message) => {
       console.log('Mensaje recibido:', message);
+
+      try {
+        const parsed = JSON.parse(message.text);
+        if (parsed?.redirect) {
+          window.location.href = parsed.redirect;
+        }
+      } catch {
+        console.log("Respuesta normal:", message.text);
+      }
     }
   });
 
