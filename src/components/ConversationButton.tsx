@@ -31,14 +31,50 @@ const ConversationButton = () => {
     },
     onMessage: (message) => {
       console.log('Mensaje recibido del agente de voz:', message);
-
-      try {
-        // El webhook devuelve JSON con instrucciones de navegación
-        const parsed = JSON.parse(message.message);
-        handleStructuredResponse(parsed);
-      } catch {
-        // Si no es JSON estructurado, es una respuesta normal del agente
-        console.log("Respuesta normal del agente:", message.message);
+      
+      const messageText = message.message || message.text || '';
+      
+      // Método 1: Detectar comandos en el texto de respuesta con patrón [NAVIGATE:/ruta]
+      const navigationMatch = messageText.match(/\[NAVIGATE:([^\]]+)\]/);
+      if (navigationMatch) {
+        const route = navigationMatch[1];
+        console.log('Comando de navegación detectado:', route);
+        handleNavigation({ redirect: route, message: `Navegando a ${route}` });
+        return;
+      }
+      
+      // Método 2: Verificar metadata si está disponible
+      if (message.metadata && message.metadata.navigation_command) {
+        const route = message.metadata.navigation_command;
+        console.log('Navegación desde metadata:', route);
+        handleNavigation({ redirect: route, message: `Navegando a ${route}` });
+        return;
+      }
+      
+      // Método 3: Detectar palabras clave en respuestas normales
+      const lowerMessage = messageText.toLowerCase();
+      
+      if (lowerMessage.includes('catálogo') || lowerMessage.includes('productos')) {
+        handleNavigation({ redirect: '/products', message: 'Te llevo al catálogo de productos' });
+      } else if (lowerMessage.includes('proveedores') || lowerMessage.includes('suppliers')) {
+        handleNavigation({ redirect: '/providers', message: 'Te llevo a la sección de proveedores' });
+      } else if (lowerMessage.includes('inicio') || lowerMessage.includes('principal')) {
+        handleNavigation({ redirect: '/', message: 'Te llevo al inicio' });
+      } else if (lowerMessage.includes('inventario') || lowerMessage.includes('stock')) {
+        handleNavigation({ redirect: '/inventory', message: 'Te llevo al inventario' });
+      } else if (lowerMessage.includes('contacto')) {
+        handleNavigation({ redirect: '/contact', message: 'Te llevo a contacto' });
+      } else if (lowerMessage.includes('soporte')) {
+        handleNavigation({ redirect: '/support', message: 'Te llevo a soporte' });
+      } else {
+        // Intentar parsear como JSON estructurado (para webhook)
+        try {
+          const parsed = JSON.parse(messageText);
+          handleStructuredResponse(parsed);
+        } catch {
+          // Si no es JSON estructurado, es una respuesta normal del agente
+          console.log("Respuesta normal del agente:", messageText);
+        }
       }
     }
   });
@@ -52,14 +88,12 @@ const ConversationButton = () => {
         handleNavigation(data);
         break;
       case 'conversation':
-        // Conversación normal, el agente sigue hablando
         console.log('Conversación continúa:', data.message);
         break;
       case 'end':
         handleEndConversation(data);
         break;
       default:
-        // Si tiene redirect, asumir navegación
         if (data.redirect) {
           handleNavigation(data);
         }
@@ -72,23 +106,20 @@ const ConversationButton = () => {
     
     setIsNavigating(true);
     
-    // Mostrar toast de navegación
     toast({
       title: "🎯 Navegando",
       description: data.message || `Llevándote a la sección solicitada`,
       duration: 2500,
     });
 
-    // Navegar después de que el agente termine de hablar
     setTimeout(() => {
       navigate(data.redirect);
       setIsNavigating(false);
       
-      // Terminar la conversación después de navegar
       setTimeout(() => {
         conversation.endSession();
       }, 500);
-    }, 2500);
+    }, 1500);
   };
 
   // Función para manejar fin de conversación
