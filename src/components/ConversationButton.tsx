@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useConversation } from '@11labs/react';
 import { useNavigate } from 'react-router-dom';
@@ -30,65 +31,158 @@ const ConversationButton = () => {
       setIsConnecting(false);
     },
     onMessage: (message) => {
-      console.log('Mensaje recibido del agente de voz:', message);
+      console.log('=== MENSAJE RECIBIDO ===');
+      console.log('Mensaje completo:', message);
+      console.log('Contenido:', message.message);
+      console.log('========================');
+
+      // Verificar si el mensaje contiene el patrón de navegación específico
+      if (message.message.includes('"navigation_command"') && message.message.includes('"/products"')) {
+        console.log('🎯 NAVEGACIÓN A PRODUCTOS DETECTADA DIRECTAMENTE');
+        handleNavigation({
+          type: 'navigation',
+          message: 'Te llevo a nuestro catálogo de productos donde encontrarás todo nuestro inventario.',
+          redirect: '/products'
+        });
+        return;
+      }
 
       try {
-        // El webhook devuelve JSON con instrucciones de navegación
+        // Intentar parsear como JSON
         const parsed = JSON.parse(message.message);
+        console.log('✅ JSON parseado exitosamente:', parsed);
         handleStructuredResponse(parsed);
-      } catch {
-        // Si no es JSON estructurado, es una respuesta normal del agente
-        console.log("Respuesta normal del agente:", message.message);
+      } catch (parseError) {
+        console.log('❌ No es JSON directo, buscando patrones...');
+        
+        // Buscar patrones de navegación en el texto
+        if (message.message.includes('navigation_command') || 
+            message.message.includes('productos') || 
+            message.message.includes('catálogo')) {
+          
+          console.log('🔍 Patrón de navegación detectado');
+          
+          // Intentar extraer JSON del mensaje
+          try {
+            const jsonMatch = message.message.match(/\[\s*{[^}]*"navigation_command"[^}]*}\s*\]/);
+            if (jsonMatch) {
+              const extractedJson = JSON.parse(jsonMatch[0]);
+              console.log('✅ JSON extraído del mensaje:', extractedJson);
+              handleStructuredResponse(extractedJson);
+              return;
+            }
+          } catch (extractError) {
+            console.log('Error extrayendo JSON:', extractError);
+          }
+          
+          // Navegación de respaldo si detectamos palabras clave
+          console.log('🚨 Activando navegación de respaldo');
+          handleNavigation({
+            type: 'navigation',
+            message: 'Navegando a productos...',
+            redirect: '/products'
+          });
+        } else {
+          // Respuesta normal del agente
+          console.log("📝 Respuesta normal del agente:", message.message);
+        }
       }
     }
   });
 
-  // Función para manejar respuestas estructuradas del webhook
+  // Función para procesar respuestas estructuradas del webhook
   const handleStructuredResponse = (data) => {
-    console.log('Respuesta del webhook:', data);
+    console.log('Procesando respuesta estructurada:', data);
     
-    switch(data.type) {
-      case 'navigation':
-        handleNavigation(data);
-        break;
+    // Si es un array, procesar cada elemento
+    if (Array.isArray(data)) {
+      data.forEach(item => processWebhookItem(item));
+    } else {
+      processWebhookItem(data);
+    }
+  };
+
+  // Función para procesar cada item del webhook
+  const processWebhookItem = (item) => {
+    console.log('Procesando item:', item);
+    
+    // Verificar si tiene metadata de navegación (tu formato específico)
+    if (item.metadata?.type === 'navigation' && item.metadata.navigation_command) {
+      console.log('✅ Navegación detectada en metadata');
+      handleNavigation({
+        type: 'navigation',
+        message: item.response || 'Navegando...',
+        redirect: item.metadata.navigation_command
+      });
+      return;
+    }
+    
+    // Verificar formato alternativo
+    if (item.type === 'navigation' && item.redirect) {
+      console.log('✅ Navegación detectada en formato alternativo');
+      handleNavigation(item);
+      return;
+    }
+    
+    // Respuesta de conversación normal
+    if (item.response && !item.metadata?.navigation_command) {
+      console.log('📝 Respuesta de conversación:', item.response);
+      return;
+    }
+    
+    // Otros tipos de respuesta
+    switch(item.type) {
       case 'conversation':
-        // Conversación normal, el agente sigue hablando
-        console.log('Conversación continúa:', data.message);
+        console.log('Conversación continúa:', item.message);
         break;
       case 'end':
-        handleEndConversation(data);
+        handleEndConversation(item);
         break;
       default:
-        // Si tiene redirect, asumir navegación
-        if (data.redirect) {
-          handleNavigation(data);
-        }
+        console.log('Tipo de respuesta no reconocido:', item);
     }
   };
 
   // Función para manejar navegación
   const handleNavigation = (data) => {
-    console.log('Navegando por comando de voz:', data);
+    console.log('🚀 Iniciando navegación:', data);
     
     setIsNavigating(true);
     
     // Mostrar toast de navegación
     toast({
       title: "🎯 Navegando",
-      description: data.message || `Llevándote a la sección solicitada`,
+      description: data.message || "Llevándote a la sección solicitada",
       duration: 2500,
     });
 
-    // Navegar después de que el agente termine de hablar
+    // Navegar después de un breve delay
     setTimeout(() => {
-      navigate(data.redirect);
+      const navigationPath = data.redirect;
+      console.log('Navegando a:', navigationPath);
+      
+      // Asegurar formato correcto de la ruta
+      const cleanPath = navigationPath.startsWith('/') ? navigationPath : `/${navigationPath}`;
+      
+      try {
+        navigate(cleanPath);
+        console.log('✅ Navegación exitosa a:', cleanPath);
+      } catch (navError) {
+        console.error('❌ Error en navegación:', navError);
+        toast({
+          title: "Error de navegación",
+          description: "No se pudo navegar a la página solicitada",
+          variant: "destructive",
+        });
+      }
+      
       setIsNavigating(false);
       
       // Terminar la conversación después de navegar
       setTimeout(() => {
         conversation.endSession();
       }, 500);
-    }, 2500);
+    }, 2000);
   };
 
   // Función para manejar fin de conversación
