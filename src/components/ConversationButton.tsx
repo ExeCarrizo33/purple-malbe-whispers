@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useConversation } from '@11labs/react';
 import { useNavigate } from 'react-router-dom';
@@ -149,7 +148,7 @@ const ConversationButton = () => {
     try {
       setIsConnecting(true);
       await conversation.startSession({
-        agentId: 'agent_01jymdjr4xfdz8q97d5ykrjxz4'
+        agentId: 'agent_01jyqnjg9jeca9v1h5pd2244v3'
       });
     } catch (error) {
       console.error('Error al iniciar conversación:', error);
